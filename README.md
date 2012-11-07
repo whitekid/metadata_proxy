@@ -9,8 +9,8 @@ In tenant's l3 routing namespace
 - make http proxy in tenant's l3 router namespace, with listening 169.254.169.254
 - remove DNAT iptable settings to point our proxy
 - in proxy, it receive instance's metada request and pass to real metadata api server. with addng X-Forwarded-For, and X-OS-TENANT-ID
-  X-Forwarded-For: real instance's ip address
-  X-OS-TENANT-ID: namespace's owner
+  - X-Forwarded-For: real instance's ip address
+  - X-OS-TENANT-ID: namespace's owner
 
 When real metadata api server receive the request
 - server can find instance's ip address with X-Forwarded-For http header
@@ -28,20 +28,30 @@ When real metadata api server receive the request
 
 ## l3-agent
 1. install twisted-web
-  $ apt-get install python-twisted-web
+```
+$ apt-get install python-twisted-web
+```
 
 2. in tenant router namespace add metadata ip to lo device
-   $ ip netns exec qrouter-XXXX ip addr add 169.254.169.254/32 device lo
+```
+$ ip netns exec qrouter-XXXX ip addr add 169.254.169.254/32 device lo
+```
 
 3. remove DNAT rule for metadata-ip
-   $ ip netns exec qrouter-XXXX
+```
+$ ip netns exec qrouter-XXXX
    $ iptables -t nat -L quantum-l3-agent-PREROUTING | grep 169.254.169.254 > /dev/null && iptables -t nat -D quantum-l3-agent-PREROUTING 1
    $ exit
+```
 
 4. simply run metadata-proxy in tenant's router namespace
-  $ ip netns exec qrouter-XXX python metadata-proxy [real-metadata-api-server-ip] [tenant-id]
-  eg) ip netns exec qrouter-XXX python proxy.py 10.100.1.6 f4fe7590238d444a8e4e52c6249581b3
+```
+$ ip netns exec qrouter-XXX python metadata-proxy [real-metadata-api-server-ip] [tenant-id]
+```
+eg) ip netns exec qrouter-XXX python proxy.py 10.100.1.6 f4fe7590238d444a8e4e52c6249581b3
 
 
 # TODO
 1. remove l3 agent's DNAT rule for metadata
+1. integrate to l3 agent
+1. with veth, allow multiple router
